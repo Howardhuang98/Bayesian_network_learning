@@ -242,4 +242,6 @@ if __name__ == '__main__':
     print(a.state_counts("A", "B"))
     print(a.score_function("A", "B"))
     print(a.expert_score("A", "B"))
-    print(a.run())
+    a.run()
+    print(a.DAG)
+
