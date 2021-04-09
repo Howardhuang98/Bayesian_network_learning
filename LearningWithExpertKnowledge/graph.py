@@ -14,5 +14,12 @@ class DAG(nx.DiGraph):
             out_str = "Cycles are not allowed in a DAG."
             out_str += "\nEdges indicating the path taken for a loop: "
             out_str += "".join([f"({u},{v}) " for (u, v) in cycles])
-            raise
+            raise ValueError(out_str)
 
+    def get_parents(self,node):
+        """
+        返回该node的parents节点
+        :param node:
+        :return:
+        """
+        return list(self.predecessors(node))

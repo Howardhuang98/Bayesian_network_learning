@@ -3,6 +3,8 @@ from LearningWithExpertKnowledge.expert import *
 from LearningWithExpertKnowledge.graph import DAG
 import networkx as nx
 import numpy as np
+from tqdm import trange
+from collections import deque
 from math import log
 
 
@@ -96,10 +98,10 @@ class Estimator:
                 else:
                     score += 0.5 * thinks[2]
         # 可能性两极化处理
-        score = -np.log(-score+1)
+        score = -np.log(-score + 1)
 
         # 考虑样本影响：
-        score *= 10000/sample_size
+        score *= 10000 / sample_size
 
         return score
 
@@ -137,7 +139,7 @@ class Estimator:
         #  score -= 0.5 * log(sample_size) * num_parents_states * (var_cardinality - 1)
         #
         ################
-        score += self.expert_score(variable=variable,parents=parents)
+        score += self.expert_score(variable=variable, parents=parents)
 
         return score
 
@@ -150,13 +152,79 @@ class Estimator:
         )
         for (X, Y) in potential_new_edges:
             # Check if adding (X, Y) will create a cycle.
-            if not nx.has_path(DAG, Y, X):
+            if not nx.has_path(self.DAG, Y, X):
                 operation = ("+", (X, Y))
                 if operation not in tabu_list:
-                    old_parents = DAG.get_parents(Y)
+                    old_parents = self.DAG.get_parents(Y)
                     new_parents = old_parents + [X]
                     score_delta = self.score_function(Y, new_parents) - self.score_function(Y, old_parents)
                     yield (operation, score_delta)
+
+        for (X, Y) in self.DAG.edges():
+            operation = ("-", (X, Y))
+            if operation not in tabu_list:
+                old_parents = self.DAG.get_parents(Y)
+                new_parents = old_parents[:]
+                new_parents.remove(X)
+                score_delta = self.score_function(Y, new_parents) - self.score_function(Y, old_parents)
+                yield (operation, score_delta)
+
+        for (X, Y) in self.DAG.edges():
+            # Check if flipping creates any cycles
+            if not any(
+                    map(lambda path: len(path) > 2, nx.all_simple_paths(self.DAG, X, Y))
+            ):
+                operation = ("flip", (X, Y))
+                if operation not in tabu_list:
+                    old_X_parents = self.DAG.get_parents(X)
+                    old_Y_parents = self.DAG.get_parents(Y)
+                    new_X_parents = old_X_parents + [Y]
+                    new_Y_parents = old_Y_parents[:]
+                    new_Y_parents.remove(X)
+                    score_delta = (
+                            self.score_function(X, new_X_parents)
+                            + self.score_function(Y, new_Y_parents)
+                            - self.score_function(X, old_X_parents)
+                            - self.score_function(Y, old_Y_parents)
+                    )
+                    yield (operation, score_delta)
+
+    def run(self,epsilon=1e-4, max_iter=1e6):
+        """
+
+        :param epsilon:
+        :param max_iter:
+        :return:
+        """
+        ########
+        # 初始检查：略去
+        ########
+        # 初始化
+        start_dag = self.DAG
+        start_dag.add_nodes_from(self.vars)
+        tabu_list = deque(maxlen=100)
+        current_model = start_dag
+        # 每次迭代，找到最佳的 (operation, score_delta)
+        iteration = trange(int(max_iter))
+        for _ in iteration:
+            best_operation, best_score_delta = max(
+                self.legal_operations(tabu_list),
+                key=lambda t: t[1],
+            )
+            if best_operation is None or best_score_delta < epsilon:
+                break
+            elif best_operation[0] == "+":
+                current_model.add_edge(*best_operation[1])
+                tabu_list.append(("-", best_operation[1]))
+            elif best_operation[0] == "-":
+                current_model.remove_edge(*best_operation[1])
+                tabu_list.append(("+", best_operation[1]))
+            elif best_operation[0] == "flip":
+                X, Y = best_operation[1]
+                current_model.remove_edge(X, Y)
+                current_model.add_edge(Y, X)
+                tabu_list.append(best_operation)
+        return current_model
 
 
 if __name__ == '__main__':
@@ -174,3 +242,4 @@ if __name__ == '__main__':
     print(a.state_counts("A", "B"))
     print(a.score_function("A", "B"))
     print(a.expert_score("A", "B"))
+    print(a.run())
