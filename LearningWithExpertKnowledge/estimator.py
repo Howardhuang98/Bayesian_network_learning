@@ -24,7 +24,7 @@ class Estimator:
             else:
                 raise ValueError("专家信息与data不符！")
         # log 文件设置
-        logging.basicConfig(filename='run.txt', level=0,filemode="w",format="")
+        logging.basicConfig(filename='log.txt', level=0, filemode="w", format="")
         logging.info("*****日志文件*****")
         logging.info("数据预览：")
         logging.info(self.data.head(5))
@@ -110,7 +110,7 @@ class Estimator:
         score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
 
         # 考虑样本影响：
-        score *= 10000 / sample_size
+        score *= 100 / sample_size
 
         return score
 
@@ -149,8 +149,8 @@ class Estimator:
         #
         ################
         expert_score = self.expert_score(variable=variable, parents=parents)
-        score = likelihood_score+expert_score
-        logging.info("{}与{}组成的部分结构，得分为：{}+{}={}".format(variable,parents,likelihood_score,expert_score,score))
+        score = likelihood_score + expert_score
+        logging.info("{}与{}组成的部分结构，得分为：{}+{}={}".format(variable, parents, likelihood_score, expert_score, score))
 
         return score
 
