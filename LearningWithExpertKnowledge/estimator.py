@@ -98,8 +98,9 @@ class Estimator:
                 else:
                     score += 0.5 * thinks[2]
         # 可能性两极化处理
-        max = len(self.vars)-1
-        score = -np.log(-score + max + 0.0000001)
+        score_max = len(self.vars)-1
+        score_min = -0.5*(len(self.vars)-1)
+        score = -np.log(-(score-score_min)/(score_max-score_min)+1)
 
         # 考虑样本影响：
         score *= 10000 / sample_size
@@ -235,14 +236,10 @@ if __name__ == '__main__':
         "C": [0.5, 0.2, 0, 0.1],
         "D": [0.3, 0.2, 0.1, 0]
     }, index=["A", "B", "C", "D"])
+    print(chen_data)
     chen = ExpertKnowledge(data=chen_data)
     data = pd.read_excel(r"./data/data.xlsx")
     a = Estimator(data=data, expert=chen)
-    a.legal_operations(tabu_list=[])
-    print(a._collect_state_names("A"))
-    print(a.state_counts("A", "B"))
-    print(a.score_function("A", "B"))
-    print(a.expert_score("A", "B"))
     a.run()
-    print(a.DAG)
+    print(a.DAG.edges)
 
