@@ -292,6 +292,11 @@ class Estimator:
         _distance_matrix[where_are_inf] = 0
         cohesion_of_initial_network = (len(self.DAG.nodes)-1)/_distance_matrix.sum()
         # 对node进行节点收缩
+        # 当对node进行节点收缩时，相当于把node的所有相邻节点到node的距离变为0
+
+    def centrality_of_nodes(self):
+        centrality = nx.katz_centrality(self.DAG,weight="weight")
+        return centrality
 
         return cohesion_of_initial_network
 
@@ -316,4 +321,4 @@ if __name__ == '__main__':
     print(a.corr_of_edges('A', 'B'))
     a.add_weight_to_edges()
     print(a.DAG.edges.data())
-    print(a.importance_of_node("A"))
+    print(a.centrality_of_nodes())
