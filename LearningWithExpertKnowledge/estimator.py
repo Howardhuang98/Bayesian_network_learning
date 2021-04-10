@@ -274,8 +274,9 @@ class Estimator:
             print("No edge was found!")
             return None
         for edge in self.DAG.edges:
-            weight = (1-abs(self.corr_of_edges(edge[0],edge[1])))*100
-            self.DAG[edge[0]][edge[1]]["weight"]=weight
+            weight = (1 - abs(self.corr_of_edges(edge[0], edge[1]))) * 100
+            self.DAG[edge[0]][edge[1]]["weight"] = weight
+
 
 if __name__ == '__main__':
     chen_data = pd.DataFrame({
@@ -292,3 +293,4 @@ if __name__ == '__main__':
     print(a.corr_of_edges('A', 'B'))
     a.add_weight_to_edges()
     print(a.DAG.edges.data())
+    a.DAG.save_to_png()

@@ -1,4 +1,5 @@
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class DAG(nx.DiGraph):
@@ -24,5 +25,8 @@ class DAG(nx.DiGraph):
         """
         return list(self.predecessors(node))
 
-
-
+    def save_to_png(self):
+        position = nx.random_layout(self)
+        nx.draw_networkx(self,pos=position,with_labels=True)
+        nx.draw_networkx_edge_labels(self,pos=position,edge_labels={(a, b): round(c["weight"],2) for (a, b, c) in self.edges.data()})
+        plt.savefig("DAG.png")
