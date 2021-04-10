@@ -277,6 +277,29 @@ class Estimator:
             weight = (1 - abs(self.corr_of_edges(edge[0], edge[1]))) * 100
             self.DAG[edge[0]][edge[1]]["weight"] = weight
 
+    def importance_of_node(self,node):
+        """
+        计算该节点的重要度
+        参考文献：复杂网络中节点重要度评估的节点收缩方法[D]. , 2006.
+        :param node:
+        :return:
+        """
+        # 计算距离矩阵
+        distance_matrix = nx.floyd_warshall_numpy(self.DAG,weight="weight")
+        # 计算初始网络的凝聚度
+        where_are_inf = np.isinf(distance_matrix)
+        _distance_matrix = distance_matrix
+        _distance_matrix[where_are_inf] = 0
+        cohesion_of_initial_network = (len(self.DAG.nodes)-1)/_distance_matrix.sum()
+        # 对node进行节点收缩
+
+        return cohesion_of_initial_network
+
+
+
+
+
+
 
 if __name__ == '__main__':
     chen_data = pd.DataFrame({
@@ -293,4 +316,4 @@ if __name__ == '__main__':
     print(a.corr_of_edges('A', 'B'))
     a.add_weight_to_edges()
     print(a.DAG.edges.data())
-    a.DAG.save_to_png()
+    print(a.importance_of_node("A"))
