@@ -98,7 +98,8 @@ class Estimator:
                 else:
                     score += 0.5 * thinks[2]
         # 可能性两极化处理
-        score = -np.log(-score + 1)
+        max = len(self.vars)-1
+        score = -np.log(-score + max + 0.0000001)
 
         # 考虑样本影响：
         score *= 10000 / sample_size
