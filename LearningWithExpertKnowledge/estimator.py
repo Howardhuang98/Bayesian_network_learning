@@ -239,6 +239,43 @@ class Estimator:
                 tabu_list.append(best_operation)
         return current_model
 
+    def mic_of_edge(self, u, v):
+        """
+        计算一对边之间的相关性，MIC
+        参考文献：Detecting novel associations in large data sets[J]. science, 2011, 334(6062): 1518-1524.
+        :param u:
+        :param v:
+        :return:
+        """
+        pass
+
+    def corr_of_edges(self, u, v):
+        """
+        计算两个节点之间的相关系数
+        ps:相关系数衡量随机变量X与Y相关程度的一种方法，相关系数的取值范围是[-1,1]。
+        相关系数的绝对值越大，则表明X与Y相关度越高。 当X与Y线性相关时，相关系数取值为1（正线性相关）或-1（负线性相关）
+        :param u:
+        :param v:
+        :return:
+        """
+        var1 = self.data[u].values
+        var2 = self.data[v].values
+        corr = np.corrcoef(var1, var2)[0][1]
+        return corr
+
+    def add_weight_to_edges(self):
+        """
+        给每条边，根据corr增加权重,经过变换：
+        100：最远，相关性最弱
+        0：最近，相关性最强
+        :return:
+        """
+        if self.DAG.edges is None:
+            print("No edge was found!")
+            return None
+        for edge in self.DAG.edges:
+            weight = (1-abs(self.corr_of_edges(edge[0],edge[1])))*100
+            self.DAG[edge[0]][edge[1]]["weight"]=weight
 
 if __name__ == '__main__':
     chen_data = pd.DataFrame({
@@ -252,4 +289,6 @@ if __name__ == '__main__':
     data = pd.read_excel(r"./data/data.xlsx")
     a = Estimator(data=data, expert=chen)
     a.run()
-    print(a.DAG.edges)
+    print(a.corr_of_edges('A', 'B'))
+    a.add_weight_to_edges()
+    print(a.DAG.edges.data())
