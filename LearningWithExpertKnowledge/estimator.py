@@ -5,7 +5,6 @@ import networkx as nx
 import numpy as np
 from tqdm import trange
 from collections import deque
-from math import log
 
 
 class Estimator:
@@ -33,30 +32,30 @@ class Estimator:
         states = sorted(list(self.data.loc[:, variable].dropna().unique()))
         return states
 
-    def state_counts(self, variable, parents=[]):
+    def state_counts(self, variable, parents=None):
         """
 
         :param variable:
         :param parents:
         :return:
         """
+        if parents is None:
+            parents = []
         parents = list(parents)
 
         # ignores either any row containing NaN, or only those where the variable or its parents is NaN
         data = self.data
 
         if not parents:
-            # count how often each state of 'variable' occured
+            # count how often each state of 'variable' occurred
             state_count_data = data.loc[:, variable].value_counts()
             state_counts = (
-                state_count_data.reindex(self.state_names[variable])
-                    .fillna(0)
-                    .to_frame()
+                state_count_data.reindex(self.state_names[variable]).fillna(0).to_frame()
             )
 
         else:
             parents_states = [self.state_names[parent] for parent in parents]
-            # count how often each state of 'variable' occured, conditional on parents' states
+            # count how often each state of 'variable' occurred, conditional on parents' states
             state_count_data = (
                 data.groupby([variable] + parents).size().unstack(parents)
             )
@@ -98,9 +97,9 @@ class Estimator:
                 else:
                     score += 0.5 * thinks[2]
         # 可能性两极化处理
-        score_max = len(self.vars)-1
-        score_min = -0.5*(len(self.vars)-1)
-        score = -np.log(-(score-score_min)/(score_max-score_min)+1)
+        score_max = len(self.vars) - 1
+        score_min = -0.5 * (len(self.vars) - 1)
+        score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
 
         # 考虑样本影响：
         score *= 10000 / sample_size
@@ -191,7 +190,7 @@ class Estimator:
                     )
                     yield (operation, score_delta)
 
-    def run(self,epsilon=1e-4, max_iter=1e6):
+    def run(self, epsilon=1e-4, max_iter=1e6):
         """
 
         :param epsilon:
@@ -231,9 +230,9 @@ class Estimator:
 
 if __name__ == '__main__':
     chen_data = pd.DataFrame({
-        "A": [0, 0.8, 0.7, 0.3],
+        "A": [0, 0.8, 0, 0.3],
         "B": [0.1, 0, 0.3, 0.9],
-        "C": [0.5, 0.2, 0, 0.1],
+        "C": [1, 0.2, 0, 0.1],
         "D": [0.3, 0.2, 0.1, 0]
     }, index=["A", "B", "C", "D"])
     print(chen_data)
@@ -242,4 +241,3 @@ if __name__ == '__main__':
     a = Estimator(data=data, expert=chen)
     a.run()
     print(a.DAG.edges)
-
