@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 from tqdm import trange
 from collections import deque
+import logging
 
 
 class Estimator:
@@ -22,6 +23,13 @@ class Estimator:
                 continue
             else:
                 raise ValueError("专家信息与data不符！")
+        # log 文件设置
+        logging.basicConfig(filename='run.txt', level=0,filemode="w",format="")
+        logging.info("*****日志文件*****")
+        logging.info("数据预览：")
+        logging.info(self.data.head(5))
+        logging.info("专家知识预览：")
+        logging.info(self.expert.data)
 
     def _collect_state_names(self, variable):
         """
@@ -132,7 +140,7 @@ class Estimator:
         log_likelihoods -= log_conditionals
         log_likelihoods *= counts
 
-        score = np.sum(log_likelihoods)
+        likelihood_score = np.sum(log_likelihoods)
         ################
         #
         #  log似然的计算
@@ -140,7 +148,9 @@ class Estimator:
         #  score -= 0.5 * log(sample_size) * num_parents_states * (var_cardinality - 1)
         #
         ################
-        score += self.expert_score(variable=variable, parents=parents)
+        expert_score = self.expert_score(variable=variable, parents=parents)
+        score = likelihood_score+expert_score
+        logging.info("{}与{}组成的部分结构，得分为：{}+{}={}".format(variable,parents,likelihood_score,expert_score,score))
 
         return score
 
@@ -208,10 +218,12 @@ class Estimator:
         # 每次迭代，找到最佳的 (operation, score_delta)
         iteration = trange(int(max_iter))
         for _ in iteration:
+            logging.debug(current_model.edges)
             best_operation, best_score_delta = max(
                 self.legal_operations(tabu_list),
                 key=lambda t: t[1],
             )
+            logging.info("搜索到的最佳操作为：{}".format(best_operation))
             if best_operation is None or best_score_delta < epsilon:
                 break
             elif best_operation[0] == "+":
