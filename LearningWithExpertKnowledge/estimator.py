@@ -1,11 +1,13 @@
+import logging
+from collections import deque
 from itertools import permutations
-from LearningWithExpertKnowledge.expert import *
-from LearningWithExpertKnowledge.graph import DAG
+
 import networkx as nx
 import numpy as np
 from tqdm import trange
-from collections import deque
-import logging
+
+from LearningWithExpertKnowledge.expert import *
+from LearningWithExpertKnowledge.graph import DAG
 
 
 class Estimator:

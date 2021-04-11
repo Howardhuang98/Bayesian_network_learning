@@ -1,5 +1,5 @@
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
 
 
 class DAG(nx.DiGraph):
@@ -11,11 +11,6 @@ class DAG(nx.DiGraph):
             cycles = list(nx.find_cycle(self))
         except nx.NetworkXNoCycle:
             pass
-        else:
-            out_str = "Cycles are not allowed in a DAG."
-            out_str += "\nEdges indicating the path taken for a loop: "
-            out_str += "".join([f"({u},{v}) " for (u, v) in cycles])
-            raise ValueError(out_str)
 
     def get_parents(self, node):
         """
