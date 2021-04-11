@@ -110,7 +110,7 @@ class Estimator:
         score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
 
         # 考虑样本影响：
-        score *= 100 / sample_size
+        score *= 1000000 / sample_size
 
         return score
 
