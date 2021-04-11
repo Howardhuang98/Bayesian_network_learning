@@ -9,7 +9,7 @@ import logging
 
 
 class Estimator:
-    def __init__(self, data: pd.DataFrame, expert: ExpertKnowledge,k=10000):
+    def __init__(self, data: pd.DataFrame, expert: ExpertKnowledge, k=10000):
         self.data = data
         self.expert = expert
         self.k = k
@@ -85,7 +85,7 @@ class Estimator:
 
         return state_counts
 
-    def expert_score(self, variable, parents, k=10000):
+    def expert_score(self, variable, parents):
         """
         专家评分部分
         :param variable:

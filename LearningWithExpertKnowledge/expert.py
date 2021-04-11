@@ -14,8 +14,8 @@ D  0.3   0.9  0.1  0
 
 class ExpertKnowledge:
     def __init__(self, data: pd.DataFrame):
-        ExpertKnowledge.data = data
-        ExpertKnowledge.variables = data.columns
+        self.data = data
+        self.variables = data.columns
         # 此处最好能做一个检查，确保values[i,j]+values[j,i]<=1
         #
         #     待补充
@@ -35,12 +35,11 @@ class ExpertKnowledge:
 
 
 if __name__ == '__main__':
-    data = pd.DataFrame({
+    chen_data = pd.DataFrame({
         "A": [0, 0.8, 0.7, 0.3],
         "B": [0.1, 0, 0.3, 0.9],
         "C": [0.5, 0.2, 0, 0.1],
         "D": [0.3, 0.2, 0.1, 0]
     }, index=["A", "B", "C", "D"])
-    print(data.columns[0])
-    chen = ExpertKnowledge(data=data)
+    chen = ExpertKnowledge(data=chen_data)
     print(chen.think("A", "B"))
