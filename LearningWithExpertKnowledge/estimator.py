@@ -9,9 +9,10 @@ import logging
 
 
 class Estimator:
-    def __init__(self, data: pd.DataFrame, expert: ExpertKnowledge):
+    def __init__(self, data: pd.DataFrame, expert: ExpertKnowledge,k=10000):
         self.data = data
         self.expert = expert
+        self.k = k
         self.DAG = DAG()
         self.vars = data.columns
         self.state_names = {
@@ -84,7 +85,7 @@ class Estimator:
 
         return state_counts
 
-    def expert_score(self, variable, parents):
+    def expert_score(self, variable, parents, k=10000):
         """
         专家评分部分
         :param variable:
@@ -110,7 +111,7 @@ class Estimator:
         score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
 
         # 考虑样本影响：
-        score *= 1000000 / sample_size
+        score *= self.k / sample_size
 
         return score
 
@@ -277,7 +278,7 @@ class Estimator:
             weight = (1 - abs(self.corr_of_edges(edge[0], edge[1]))) * 100
             self.DAG[edge[0]][edge[1]]["weight"] = weight
 
-    def importance_of_node(self,node):
+    def importance_of_node(self, node):
         """
         计算该节点的重要度
         参考文献：复杂网络中节点重要度评估的节点收缩方法[D]. , 2006.
@@ -285,25 +286,18 @@ class Estimator:
         :return:
         """
         # 计算距离矩阵
-        distance_matrix = nx.floyd_warshall_numpy(self.DAG,weight="weight")
+        distance_matrix = nx.floyd_warshall_numpy(self.DAG, weight="weight")
         # 计算初始网络的凝聚度
         where_are_inf = np.isinf(distance_matrix)
         _distance_matrix = distance_matrix
         _distance_matrix[where_are_inf] = 0
-        cohesion_of_initial_network = (len(self.DAG.nodes)-1)/_distance_matrix.sum()
+        cohesion_of_initial_network = (len(self.DAG.nodes) - 1) / _distance_matrix.sum()
         # 对node进行节点收缩
         # 当对node进行节点收缩时，相当于把node的所有相邻节点到node的距离变为0
 
     def centrality_of_nodes(self):
-        centrality = nx.katz_centrality(self.DAG,weight="weight")
+        centrality = nx.katz_centrality(self.DAG, weight="weight")
         return centrality
-
-        return cohesion_of_initial_network
-
-
-
-
-
 
 
 if __name__ == '__main__':
