@@ -10,7 +10,7 @@ if __name__ == '__main__':
     asian_data = pd.read_csv(r"../data/asian.csv", index_col=0)
     expert_data = pd.read_csv(r"../data/asian_expert.csv", index_col=0)
     huang = ExpertKnowledge(data=expert_data)
-    est = Estimator(data=asian_data, expert=huang, k=10000000000)
+    est = Estimator(data=asian_data, expert=huang, k=100000)
     est.run()
     est.DAG.save_to_png(weight=False)
     print(est.centrality_of_nodes())

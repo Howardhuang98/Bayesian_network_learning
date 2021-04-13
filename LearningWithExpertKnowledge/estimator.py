@@ -107,7 +107,7 @@ class Estimator:
                     score += thinks[1] - 0.5 * thinks[2]
                 else:
                     score += 0.5 * thinks[2]
-        # 可能性两极化处理
+        # 评分两极化处理
         score_max = len(self.vars) - 1
         score_min = -0.5 * (len(self.vars) - 1)
         score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
