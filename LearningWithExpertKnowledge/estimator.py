@@ -97,20 +97,22 @@ class Estimator:
         parents = set(parents)
         sample_size = len(self.data)
         # 专家分数计算
-        score = 0
+        score = 1
         for node in self.vars:
             thinks = self.expert.think(variable, node)
             if node == variable:
                 continue
+            elif node in parents:
+                score *= thinks[1]
             else:
-                if node in parents:
-                    score += thinks[1] - 0.5 * thinks[2]
-                else:
-                    score += 0.5 * thinks[2]
+                score *= thinks[2]
         # 评分两极化处理
-        score_max = len(self.vars) - 1
-        score_min = -0.5 * (len(self.vars) - 1)
-        score = -np.log(-(score - score_min) / (score_max - score_min) + 1)
+        # 若信息全部是0.333，那么score = 0.333**(len(self.vars)-1)
+        zero_point = 0.333 ** (len(self.vars) - 1)
+        if score > zero_point:
+            score = 10e17/(1-zero_point) * (score - zero_point)
+        else:
+            score = (-10e17)/(0-zero_point) * (score - zero_point)
 
         # 考虑样本影响：
         score *= self.k / sample_size
@@ -121,7 +123,7 @@ class Estimator:
         """
 
         :param variable:
-        :param parents:
+        :param parents: 一定要是list
         :return:
         """
         var_states = self.state_names[variable]
