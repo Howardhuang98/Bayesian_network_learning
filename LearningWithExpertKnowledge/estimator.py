@@ -146,13 +146,7 @@ class Estimator:
         log_likelihoods *= counts
 
         likelihood_score = np.sum(log_likelihoods)
-        ################
-        #
-        #  log似然的计算
-        #  加上这段代码就是BIC评分
-        #  score -= 0.5 * log(sample_size) * num_parents_states * (var_cardinality - 1)
-        #
-        ################
+
         expert_score = self.expert_score(variable=variable, parents=parents)
         score = likelihood_score + expert_score
         logging.info("{}与{}组成的部分结构，得分为：{}+{}={}".format(variable, parents, likelihood_score, expert_score, score))
